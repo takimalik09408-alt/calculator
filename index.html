@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CalcPro – Advanced Calculator</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f3f4f8;--card:#fff;--tx:#1b1d29;--mu:#6b7080;--bd:#dcdfe8;--key:#eceef5;--op:#dfe4ff;--ac:#4f46e5;--acx:#fff}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10121a;--card:#1a1d29;--tx:#eceef7;--mu:#8d93a8;--bd:#2c3042;--key:#252938;--op:#2d3360;--ac:#7c75ff;--acx:#10121a}}
+:root[data-theme="dark"]{--bg:#10121a;--card:#1a1d29;--tx:#eceef7;--mu:#8d93a8;--bd:#2c3042;--key:#252938;--op:#2d3360;--ac:#7c75ff;--acx:#10121a}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{display:flex;justify-content:space-between;align-items:center;max-width:900px;margin:0 auto;padding:14px 16px}
+h1{font-size:20px;margin:0}h1 span{color:var(--ac)}
+button,input,select{font:inherit;color:inherit}
+.tabs{display:flex;gap:6px;max-width:900px;margin:0 auto;padding:0 16px 10px;overflow-x:auto}
+.tab{border:1px solid var(--bd);background:var(--card);padding:8px 14px;border-radius:20px;cursor:pointer;white-space:nowrap}
+.tab.on{background:var(--ac);color:var(--acx);border-color:var(--ac)}
+main{max-width:900px;margin:0 auto;padding:0 16px 30px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:16px}
+.pane{display:none}.pane.on{display:block}
+.disp{width:100%;border:0;background:transparent;font-size:28px;text-align:right;outline:0;padding:4px 0}
+.res{text-align:right;font-size:22px;color:var(--ac);min-height:32px;word-break:break-all}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}
+.sci{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:10px}
+.sci button{padding:12px 0;border:0;border-radius:10px;background:var(--key);cursor:pointer}
+.sci button.o{background:var(--op)}.sci button.e{background:var(--ac);color:var(--acx);font-weight:700}
+.sci button:active{transform:scale(.95)}
+.sm{padding:6px 10px;border:1px solid var(--bd);background:var(--key);border-radius:8px;cursor:pointer}
+.sm.on{background:var(--ac);color:var(--acx)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:700px){.grid2{grid-template-columns:1fr}}
+.hist{max-height:300px;overflow:auto;font-size:14px}
+.hist div{padding:6px 4px;border-bottom:1px solid var(--bd);cursor:pointer;text-align:right}
+.hist small{color:var(--mu);display:block}
+label{display:block;color:var(--mu);font-size:13px;margin-top:8px}
+input[type=text],input[type=number],select{width:100%;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--key)}
+canvas{width:100%;height:340px;border-radius:12px;background:var(--key);touch-action:none;display:block}
+.out{font-size:22px;font-weight:600;margin:4px 0;word-break:break-all}
+.kv{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd);gap:10px}
+.kv b{word-break:break-all;text-align:right}
+.mu{color:var(--mu);font-size:13px}
+footer{max-width:900px;margin:0 auto;padding:10px 16px 28px;text-align:center;color:var(--mu);font-size:14px}footer b{color:var(--ac)}
+</style></head><body>
+<header><h1>Calc<span>Pro</span></h1><button class="sm" id="theme">◐ Theme</button></header>
+<div class="tabs" id="tabs"></div>
+<main>
+
+<section class="pane on" id="p-sci"><div class="grid2">
+<div class="card">
+ <div class="row"><button class="sm on" id="deg">DEG</button><button class="sm" id="rad">RAD</button><span class="mu" id="mem"></span></div>
+ <input class="disp" id="expr" placeholder="0" autocomplete="off" inputmode="none">
+ <div class="res" id="res"></div>
+ <div class="sci" id="keys"></div>
+</div>
+<div class="card"><div class="row" style="justify-content:space-between"><b>History</b><button class="sm" id="clh">Clear</button></div><div class="hist" id="hist"><span class="mu">No calculations yet</span></div>
+<p class="mu">Keyboard works. Use <code>ans</code> for last result. Functions: sin, cos, tan, asin, log, ln, sqrt, cbrt, exp, nCr(n,r), nPr(n,r), n!</p></div>
+</div></section>
+
+<section class="pane" id="p-graph"><div class="card">
+ <div class="row"><input type="text" id="f1" value="sin(x)" placeholder="f(x)" style="flex:1;min-width:140px">
+ <input type="text" id="f2" value="x^2/10" placeholder="g(x) (optional)" style="flex:1;min-width:140px"></div>
+ <canvas id="cv" width="800" height="340"></canvas>
+ <div class="row"><button class="sm" id="zi">＋ Zoom in</button><button class="sm" id="zo">－ Zoom out</button><button class="sm" id="zr">Reset</button><span class="mu">Drag to pan · scroll to zoom · radians</span></div>
+</div></section>
+
+<section class="pane" id="p-conv"><div class="card">
+ <label>Category</label><select id="cat"></select>
+ <div class="grid2"><div><label>From</label><select id="uf"></select><input type="number" id="vf" value="1" step="any"></div>
+ <div><label>To</label><select id="ut"></select><div class="out" id="vt">—</div></div></div>
+ <div class="row"><button class="sm" id="swap">⇄ Swap</button></div>
+</div></section>
+
+<section class="pane" id="p-prog"><div class="card">
+ <div class="grid2"><div><label>Input value</label><input type="text" id="pin" value="255"></div>
+ <div><label>Input base</label><select id="pb"><option value="10">Decimal (10)</option><option value="2">Binary (2)</option><option value="8">Octal (8)</option><option value="16">Hexadecimal (16)</option></select></div></div>
+ <div id="pout"></div>
+ <label>Bitwise (decimal): A &amp; B</label>
+ <div class="row"><input type="number" id="ba" value="12" style="flex:1"><input type="number" id="bb" value="10" style="flex:1"></div>
+ <div id="bout"></div>
+</div></section>
+
+<section class="pane" id="p-fin"><div class="grid2">
+<div class="card"><b>Loan / EMI</b>
+ <label>Loan amount</label><input type="number" id="lp" value="1000000">
+ <label>Annual interest rate (%)</label><input type="number" id="lr" value="8.5" step="any">
+ <label>Tenure (years)</label><input type="number" id="ly" value="10" step="any">
+ <div id="lout"></div></div>
+<div class="card"><b>Compound interest / SIP</b>
+ <label>Monthly investment (SIP)</label><input type="number" id="sp" value="5000">
+ <label>Expected return (% / year)</label><input type="number" id="sr" value="12" step="any">
+ <label>Years</label><input type="number" id="sy" value="15" step="any">
+ <div id="sout"></div></div>
+</div></section>
+
+<section class="pane" id="p-misc"><div class="grid2">
+<div class="card"><b>Percentage</b>
+ <label>X % of Y</label><div class="row"><input type="number" id="pa" value="15" style="flex:1"><input type="number" id="pb2" value="2000" style="flex:1"></div>
+ <div class="out" id="po1"></div>
+ <label>% change from A to B</label><div class="row"><input type="number" id="pc" value="80" style="flex:1"><input type="number" id="pd" value="100" style="flex:1"></div>
+ <div class="out" id="po2"></div></div>
+<div class="card"><b>BMI &amp; Age</b>
+ <label>Weight (kg)</label><input type="number" id="bw" value="70"><label>Height (cm)</label><input type="number" id="bh" value="170">
+ <div class="out" id="bmi"></div>
+ <label>Date of birth</label><input type="date" id="dob" value="2000-01-01" style="width:100%;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--key)">
+ <div class="out" id="age"></div></div>
+</div></section>
+</main>
+<footer>Made by <b>Taki</b></footer>
+
+<script>
+const $=id=>document.getElementById(id);
+// ---------- tabs
+const T=[['sci','Scientific'],['graph','Graph'],['conv','Converter'],['prog','Programmer'],['fin','Finance'],['misc','Percent · BMI · Age']];
+T.forEach(([k,n],i)=>{const b=document.createElement('button');b.className='tab'+(i?'':' on');b.textContent=n;b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));b.classList.add('on');document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));$('p-'+k).classList.add('on');if(k==='graph')draw()};$('tabs').appendChild(b)});
+$('theme').onclick=()=>{const r=document.documentElement;const dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;r.dataset.theme=dark?'light':'dark';draw()};
+
+// ---------- safe evaluator
+let degMode=true,ans=0,mem=0;
+const fact=n=>{if(n<0||n!==Math.floor(n))return NaN;if(n>170)return Infinity;let r=1;for(let i=2;i<=n;i++)r*=i;return r};
+const toR=x=>degMode?x*Math.PI/180:x, fromR=x=>degMode?x*180/Math.PI:x;
+const F={sin:x=>{const v=Math.sin(toR(x));return Math.abs(v)<1e-15?0:v},cos:x=>{const v=Math.cos(toR(x));return Math.abs(v)<1e-15?0:v},tan:x=>Math.tan(toR(x)),
+asin:x=>fromR(Math.asin(x)),acos:x=>fromR(Math.acos(x)),atan:x=>fromR(Math.atan(x)),sinh:Math.sinh,cosh:Math.cosh,tanh:Math.tanh,
+log:Math.log10,ln:Math.log,sqrt:Math.sqrt,cbrt:Math.cbrt,abs:Math.abs,exp:Math.exp,fact,
+nCr:(n,r)=>fact(n)/(fact(r)*fact(n-r)),nPr:(n,r)=>fact(n)/fact(n-r),PI:Math.PI,E:Math.E};
+function prep(s){
+ s=s.replace(/π/g,'PI').replace(/×/g,'*').replace(/÷/g,'/').replace(/√\(/g,'sqrt(').replace(/\^/g,'**').replace(/(\d+(?:\.\d+)?|\))\s*%/g,'($1/100)')
+  .replace(/(\d+(?:\.\d+)?)!/g,'fact($1)').replace(/(\d|\))\s*(?=[a-zA-Z(])/g,(m,a,o,str)=>{const rest=str.slice(o+m.length);return /^(e\d|E\d)/.test(rest)?m:a+'*'});
+ return s}
+function evalExpr(s,vars={}){
+ s=prep(s);const ids=s.match(/[a-zA-Z_]+/g)||[];
+ const ok=new Set([...Object.keys(F),'ans','x']);
+ for(const id of ids){if(!ok.has(id)&&!/^e$/i.test(id))throw Error('Unknown: '+id)}
+ if(/[^\w\s+\-*/().,]/.test(s))throw Error('Invalid character');
+ const names=[...Object.keys(F),'ans','x'];
+ const fn=new Function(...names,'"use strict";return ('+s+')');
+ return fn(...Object.keys(F).map(k=>F[k]),vars.ans??ans,vars.x)}
+const fmt=v=>{if(typeof v!=='number'||isNaN(v))return 'Error';if(!isFinite(v))return v>0?'∞':'-∞';return String(+v.toPrecision(12))};
+
+// ---------- scientific UI
+const ex=$('expr'),rs=$('res');let hist=[];
+const K=[['sin(','o'],['cos(','o'],['tan(','o'],['log(','o'],['ln(','o'],
+['asin(','o'],['acos(','o'],['atan(','o'],['√(','o'],['^','o'],
+['π','o'],['e','o'],['!','o'],['(','o'],[')','o'],
+['MC','o'],['MR','o'],['M+','o'],['M-','o'],['⌫','o'],
+['7'],['8'],['9'],['÷','o'],['AC','o'],
+['4'],['5'],['6'],['×','o'],['ans','o'],
+['1'],['2'],['3'],['-','o'],['%','o'],
+['0'],['.'],['EXP','o'],['+','o'],['=','e']];
+K.forEach(([k,c])=>{const b=document.createElement('button');b.textContent=k;if(c)b.className=c;b.onclick=()=>press(k);$('keys').appendChild(b)});
+function live(){try{if(!ex.value.trim()){rs.textContent='';return}const v=evalExpr(ex.value);rs.textContent='= '+fmt(v)}catch(e){rs.textContent=''}}
+function equals(){try{const v=evalExpr(ex.value);if(typeof v!=='number'||isNaN(v))throw 0;hist.unshift([ex.value,fmt(v)]);ans=v;ex.value=fmt(v);rs.textContent='';renderHist()}catch(e){rs.textContent='Error'}}
+function press(k){const cur=ex.value;
+ if(k==='AC'){ex.value='';rs.textContent=''}
+ else if(k==='⌫')ex.value=cur.slice(0,-1);
+ else if(k==='=')return equals();
+ else if(k==='EXP')ex.value+='e';
+ else if(k==='MC'){mem=0;showMem()}
+ else if(k==='MR')ex.value+=fmt(mem);
+ else if(k==='M+'||k==='M-'){try{const v=evalExpr(cur||'0');mem+=k==='M+'?v:-v;showMem()}catch(e){}}
+ else ex.value+=k;
+ live()}
+const showMem=()=>$('mem').textContent=mem?'M = '+fmt(mem):'';
+function renderHist(){$('hist').innerHTML=hist.length?'':'<span class="mu">No calculations yet</span>';hist.forEach(([a,b])=>{const d=document.createElement('div');d.innerHTML='<small></small><b></b>';d.children[0].textContent=a;d.children[1].textContent='= '+b;d.onclick=()=>{ex.value=b;live()};$('hist').appendChild(d)})}
+ex.addEventListener('input',live);
+ex.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();equals()}});
+$('clh').onclick=()=>{hist=[];renderHist()};
+$('deg').onclick=()=>{degMode=true;$('deg').classList.add('on');$('rad').classList.remove('on');live()};
+$('rad').onclick=()=>{degMode=false;$('rad').classList.add('on');$('deg').classList.remove('on');live()};
+
+// ---------- graph
+const cv=$('cv'),cx=cv.getContext('2d');let view={cx:0,cy:0,s:40};
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function compile(s){if(!s.trim())return null;try{prep(s);evalExpr(s,{x:0});return x=>{const v=evalExpr(s,{x});return typeof v==='number'?v:NaN}}catch(e){return null}}
+function draw(){const r=cv.getBoundingClientRect();if(!r.width)return;const d=devicePixelRatio||1;cv.width=r.width*d;cv.height=r.height*d;cx.setTransform(d,0,0,d,0,0);
+ const W=r.width,H=r.height,{s}=view;const X=x=>W/2+(x-view.cx)*s,Y=y=>H/2-(y-view.cy)*s;
+ cx.clearRect(0,0,W,H);cx.font='11px system-ui';
+ const step=[1,2,5].flatMap(m=>[0.001,0.01,0.1,1,10,100,1000].map(p=>m*p)).sort((a,b)=>a-b).find(v=>v*s>=50)||1000;
+ cx.strokeStyle=css('--bd');cx.fillStyle=css('--mu');cx.lineWidth=1;
+ for(let x=Math.ceil((view.cx-W/2/s)/step)*step;x<=view.cx+W/2/s;x+=step){cx.beginPath();cx.moveTo(X(x),0);cx.lineTo(X(x),H);cx.stroke();cx.fillText(+x.toFixed(6),X(x)+2,Math.min(H-3,Math.max(11,Y(0)+12)))}
+ for(let y=Math.ceil((view.cy-H/2/s)/step)*step;y<=view.cy+H/2/s;y+=step){cx.beginPath();cx.moveTo(0,Y(y));cx.lineTo(W,Y(y));cx.stroke();if(Math.abs(y)>1e-9)cx.fillText(+y.toFixed(6),Math.min(W-30,Math.max(2,X(0)+3)),Y(y)-2)}
+ cx.strokeStyle=css('--tx');cx.lineWidth=1.5;cx.beginPath();cx.moveTo(X(0),0);cx.lineTo(X(0),H);cx.moveTo(0,Y(0));cx.lineTo(W,Y(0));cx.stroke();
+ const old=degMode;degMode=false;
+ [[$('f1').value,css('--ac')],[$('f2').value,'#e8590c']].forEach(([src,col])=>{const f=compile(src);if(!f)return;cx.strokeStyle=col;cx.lineWidth=2;cx.beginPath();let pen=false,py=0;
+  for(let px=0;px<=W;px+=1){const x=view.cx+(px-W/2)/s,y=f(x);if(!isFinite(y)||Math.abs(Y(y))>H*20){pen=false;continue}
+   if(pen&&Math.abs(Y(y)-py)<H*2)cx.lineTo(px,Y(y));else cx.moveTo(px,Y(y));pen=true;py=Y(y)}cx.stroke()});
+ degMode=old}
+let drag=null;
+cv.onpointerdown=e=>{drag={x:e.clientX,y:e.clientY};cv.setPointerCapture(e.pointerId)};
+cv.onpointermove=e=>{if(!drag)return;view.cx-=(e.clientX-drag.x)/view.s;view.cy+=(e.clientY-drag.y)/view.s;drag={x:e.clientX,y:e.clientY};draw()};
+cv.onpointerup=()=>drag=null;
+cv.addEventListener('wheel',e=>{e.preventDefault();view.s*=e.deltaY<0?1.15:1/1.15;draw()},{passive:false});
+$('zi').onclick=()=>{view.s*=1.4;draw()};$('zo').onclick=()=>{view.s/=1.4;draw()};$('zr').onclick=()=>{view={cx:0,cy:0,s:40};draw()};
+$('f1').oninput=$('f2').oninput=draw;addEventListener('resize',draw);
+
+// ---------- converter
+const U={Length:{m:1,km:1000,cm:.01,mm:.001,mile:1609.344,yard:.9144,foot:.3048,inch:.0254},
+Mass:{kg:1,g:.001,mg:1e-6,tonne:1000,lb:.45359237,oz:.028349523},
+Temperature:{'°C':1,'°F':1,K:1},
+Area:{'m²':1,'km²':1e6,'ha':1e4,'acre':4046.8564,'ft²':.09290304,'bigha (UP)':2529.29},
+Volume:{L:1,mL:.001,'m³':1000,gallon:3.785411784,cup:.2365882365},
+Speed:{'m/s':1,'km/h':1/3.6,mph:.44704,knot:.514444},
+Time:{s:1,min:60,hour:3600,day:86400,week:604800,year:31556952},
+Data:{B:1,KB:1024,MB:1048576,GB:1073741824,TB:1099511627776,bit:.125}};
+Object.keys(U).forEach(c=>$('cat').add(new Option(c,c)));
+function fillUnits(){const u=Object.keys(U[$('cat').value]);[$('uf'),$('ut')].forEach(s=>{s.innerHTML='';u.forEach(x=>s.add(new Option(x,x)))});$('ut').selectedIndex=Math.min(1,u.length-1);conv()}
+function conv(){const c=$('cat').value,a=$('uf').value,b=$('ut').value,v=parseFloat($('vf').value);if(isNaN(v)){$('vt').textContent='—';return}
+ let r;if(c==='Temperature'){let k=a==='°C'?v+273.15:a==='°F'?(v-32)*5/9+273.15:v;r=b==='°C'?k-273.15:b==='°F'?(k-273.15)*9/5+32:k}
+ else r=v*U[c][a]/U[c][b];$('vt').textContent=(+r.toPrecision(10)).toLocaleString('en-US',{maximumFractionDigits:10})+' '+b}
+$('cat').onchange=fillUnits;[$('uf'),$('ut'),$('vf')].forEach(e=>e.oninput=conv);
+$('swap').onclick=()=>{const t=$('uf').value;$('uf').value=$('ut').value;$('ut').value=t;conv()};
+
+// ---------- programmer
+function prog(){const s=$('pin').value.trim().toLowerCase().replace(/^0[xbo]/,''),b=+$('pb').value;let o='';
+ try{if(!s)throw 0;const digs='0123456789abcdef'.slice(0,b);if([...s.replace('-','')].some(c=>!digs.includes(c)))throw 0;
+  let n=0n;const neg=s[0]==='-';for(const c of s.replace('-',''))n=n*BigInt(b)+BigInt(digs.indexOf(c));if(neg)n=-n;
+  [['Decimal',10],['Binary',2],['Octal',8],['Hex',16]].forEach(([l,B])=>o+=`<div class="kv"><span>${l}</span><b>${n.toString(B).toUpperCase()}</b></div>`);
+  o+=`<div class="kv"><span>ASCII char</span><b>${n>=32n&&n<1114112n?String.fromCodePoint(Number(n)):'—'}</b></div>`}
+ catch(e){o='<p class="mu">Enter a valid number for the selected base.</p>'}
+ $('pout').innerHTML=o;
+ const a=BigInt(Math.trunc($('ba').value||0)),c=BigInt(Math.trunc($('bb').value||0));
+ $('bout').innerHTML=[['AND',a&c],['OR',a|c],['XOR',a^c],['A << 1',a<<1n],['A >> 1',a>>1n],['NOT A',~a]].map(([l,v])=>`<div class="kv"><span>${l}</span><b>${v} <span class="mu">(0b${(v<0n?-v:v).toString(2)})</span></b></div>`).join('')}
+[$('pin'),$('pb'),$('ba'),$('bb')].forEach(e=>e.oninput=prog);
+
+// ---------- finance
+const inr=v=>'₹'+Math.round(v).toLocaleString('en-IN');
+function fin(){const P=+$('lp').value,r=+$('lr').value/1200,n=+$('ly').value*12;
+ const emi=r?P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1):P/n;const tot=emi*n;
+ $('lout').innerHTML=n>0&&P>0?`<div class="out">${inr(emi)} / month</div><div class="kv"><span>Total interest</span><b>${inr(tot-P)}</b></div><div class="kv"><span>Total payment</span><b>${inr(tot)}</b></div>`:'';
+ const m=+$('sp').value,i=+$('sr').value/1200,k=+$('sy').value*12;
+ const fv=i?m*((Math.pow(1+i,k)-1)/i)*(1+i):m*k;
+ $('sout').innerHTML=k>0?`<div class="out">${inr(fv)}</div><div class="kv"><span>Invested</span><b>${inr(m*k)}</b></div><div class="kv"><span>Estimated gains</span><b>${inr(fv-m*k)}</b></div>`:''}
+['lp','lr','ly','sp','sr','sy'].forEach(i=>$(i).oninput=fin);
+
+// ---------- misc
+function misc(){const a=+$('pa').value,b=+$('pb2').value;$('po1').textContent=`${a}% of ${b} = ${+(a*b/100).toPrecision(10)}`;
+ const c=+$('pc').value,d=+$('pd').value;$('po2').textContent=c?`Change: ${+((d-c)/Math.abs(c)*100).toFixed(4)}%`:'—';
+ const w=+$('bw').value,h=+$('bh').value/100;if(w&&h){const v=w/(h*h);$('bmi').textContent=`BMI ${v.toFixed(1)} – ${v<18.5?'Underweight':v<25?'Normal':v<30?'Overweight':'Obese'}`}
+ const db=new Date($('dob').value),n=new Date();if(!isNaN(db)){let y=n.getFullYear()-db.getFullYear(),mo=n.getMonth()-db.getMonth(),dd=n.getDate()-db.getDate();if(dd<0){mo--;dd+=new Date(n.getFullYear(),n.getMonth(),0).getDate()}if(mo<0){y--;mo+=12}
+  $('age').textContent=`Age: ${y}y ${mo}m ${dd}d`}}
+['pa','pb2','pc','pd','bw','bh','dob'].forEach(i=>$(i).oninput=misc);
+
+fillUnits();prog();fin();misc();ex.focus();
+</script></body></html>
